@@ -485,21 +485,24 @@ reasoning before making the change.
 
 ## Current Development Phase
 
-The project is currently **in Phase 1**.
+The project is currently **in Phase 5**.
 
-`problem-details-core` is under active development on `feat/problem-details-core`.
-No other implementation module has been started; do not scaffold them ahead of
-their phase.
+`problem-details-spring` is under active development on `feat/problem-details-spring`.
+No JAX-RS module has been started; do not scaffold it ahead of its phase.
 
-Currently, there are:
+Currently implemented and merged to `main`:
 
-- No `ProblemDetail` implementation yet (in progress).
-- No Jackson module.
-- No XML module.
-- No registry module.
-- No Spring module.
+- `problem-details-core`
+- `problem-details-jackson`
+- `problem-details-xml`
+- `problem-details-registry`
+
+In progress:
+
+- No Spring module yet (in progress).
+
+Not started:
+
 - No JAX-RS module.
 
 Do not create any implementation module unless the current task explicitly starts its corresponding phase.
-
-The first implementation phase is `problem-details-core`.
