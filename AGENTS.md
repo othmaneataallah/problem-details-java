@@ -485,24 +485,18 @@ reasoning before making the change.
 
 ## Current Development Phase
 
-The project is currently **in Phase 6** (the final planned phase).
-
-`problem-details-jaxrs` is under active development on `feat/problem-details-jaxrs`.
-
-Currently implemented and merged to `main`:
+All six planned phases are implemented and merged to `main`:
 
 - `problem-details-core`
 - `problem-details-jackson`
 - `problem-details-xml`
 - `problem-details-registry`
 - `problem-details-spring`
+- `problem-details-jaxrs`
 
-In progress:
+No new implementation module is planned. The next milestone is release
+preparation (Maven Central publishing, usage documentation, changelog), which
+is deliberately deferred until the codebase and testing are finalized.
 
-- No JAX-RS module yet (in progress).
-
-Not started:
-
-- No JAX-RS module.
-
-Do not create any implementation module unless the current task explicitly starts its corresponding phase.
+Do not create any new module unless the current task explicitly starts a new
+phase.
