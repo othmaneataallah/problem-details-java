@@ -7,6 +7,8 @@ and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-09-17
+
 ### Added
 
 - `problem-details-core`: immutable RFC 9457 model — `ProblemDetail` with builder,

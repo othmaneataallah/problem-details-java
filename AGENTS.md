@@ -476,16 +476,18 @@ One-time setup (browser, by the repository owner):
 
 Release flow (see `release.yml`):
 
-1. Land a preparation PR: set the release version in the root POM, move the
-   `CHANGELOG.md` entries out of `[Unreleased]`.
+1. Land a preparation PR: set the release version everywhere with
+   `./mvnw versions:set -DnewVersion=<version> -DgenerateBackupPoms=false`
+   from a clean tree (never edit versions file by file — a half-changed reactor
+   does not build), and move the `CHANGELOG.md` entries out of `[Unreleased]`.
 2. Tag `v<version>` on `main` and push the tag. The workflow checks the tag
    matches the POM version, then builds with the `release` profile (sources
    and Javadoc jars, license files in jars, GPG signatures) and stages a
    Portal deployment.
 3. Publish the staged deployment by hand in the Portal UI (`autoPublish` is
    `false` until the process is proven).
-4. Follow up on `main`: bump to the next `-SNAPSHOT` version and open a new
-   `[Unreleased]` changelog section.
+4. Follow up on `main`: bump to the next `-SNAPSHOT` version the same way
+   (`versions:set`) and open a new `[Unreleased]` changelog section.
 
 ---
 
