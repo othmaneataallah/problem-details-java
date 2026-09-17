@@ -13,6 +13,7 @@
     <modules>
         <module>problem-details-core</module>
         <module>problem-details-jackson</module>
+        <module>problem-details-xml</module>
     </modules>
 
     <name>problem-details-java</name>
