@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.othmaneataallah.problemdetails.core.ProblemDetail;
 import io.github.othmaneataallah.problemdetails.core.ProblemDetailKey;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,6 +95,37 @@ class ProblemXmlSerializationTest {
     assertThatThrownBy(() -> ProblemXml.toXml(problem))
         .isInstanceOf(IllegalArgumentException.class)
         .hasMessageContaining("Unsupported extension value type");
+  }
+
+  @Test
+  void booleanAndCharacterValuesSerializeAsText() throws XMLStreamException {
+    ProblemDetail problem =
+        ProblemDetail.builder()
+            .extension(ProblemDetailKey.of("flag", Boolean.class), true)
+            .extension(ProblemDetailKey.of("initial", Character.class), 'x')
+            .build();
+
+    assertThat(ProblemXml.toXml(problem)).contains("<flag>true</flag><initial>x</initial>");
+  }
+
+  @Test
+  void nullsInsideContainersAreOmitted() throws XMLStreamException {
+    List<String> items = new ArrayList<>();
+    items.add("a");
+    items.add(null);
+    Map<String, Object> values = new LinkedHashMap<>();
+    values.put("present", "yes");
+    values.put("missing", null);
+
+    ProblemDetail problem =
+        ProblemDetail.builder()
+            .extension(ProblemDetailKey.of("items", Object.class), items)
+            .extension(ProblemDetailKey.of("values", Object.class), values)
+            .build();
+
+    assertThat(ProblemXml.toXml(problem))
+        .contains("<items><i>a</i></items>")
+        .contains("<values><present>yes</present></values>");
   }
 
   @Test

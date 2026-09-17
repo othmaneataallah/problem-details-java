@@ -71,6 +71,18 @@ class SpringProblemDetailsTest {
   }
 
   @Test
+  void convertsTitlelessProblem() {
+    ProblemDetail titleless = ProblemDetail.builder().status(404).build();
+
+    org.springframework.http.ProblemDetail springDetail =
+        SpringProblemDetails.toSpringDetail(titleless);
+
+    // Spring's forStatus pre-fills the title with the status reason phrase.
+    assertThat(springDetail.getTitle()).isEqualTo("Not Found");
+    assertThat(springDetail.getStatus()).isEqualTo(404);
+  }
+
+  @Test
   void nullProblemIsRejected() {
     assertThatThrownBy(() -> SpringProblemDetails.statusCode(null))
         .isInstanceOf(NullPointerException.class);

@@ -373,6 +373,16 @@ A test-scoped dependency may be used when appropriate.
 
 However, test dependencies must not accidentally become runtime dependencies of the published module.
 
+### Coverage
+
+JaCoCo (`jacoco.version` in the parent POM) is wired report-only: every
+`./mvnw clean verify` writes per-module reports to `target/site/jacoco` without
+failing the build. There are no coverage gates; use the reports during review
+to spot untested branches. One known artifact: single-statement lines that
+always throw (for example a guard delegating to a method that only throws)
+execute but never complete, so JaCoCo reports them as missed despite a passing
+test proving otherwise.
+
 ### Completion Requirement
 
 A change is not considered complete merely because it compiles.

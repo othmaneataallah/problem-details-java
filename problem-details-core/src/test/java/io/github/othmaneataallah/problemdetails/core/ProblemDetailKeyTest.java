@@ -37,11 +37,21 @@ class ProblemDetailKeyTest {
         .isEqualTo(ProblemDetailKey.of("balance", Integer.class));
     assertThat(ProblemDetailKey.of("balance", Integer.class))
         .isEqualTo(ProblemDetailKey.of("balance", String.class));
+    assertThat(ProblemDetailKey.of("balance", String.class))
+        .isEqualTo(ProblemDetailKey.of("balance", Integer.class));
     assertThat(ProblemDetailKey.of("balance", Integer.class))
         .isNotEqualTo(ProblemDetailKey.of("other", Integer.class));
     assertThat(ProblemDetailKey.of("balance", Integer.class)).isNotEqualTo("balance");
+    assertThat(ProblemDetailKey.of("balance", Integer.class)).isNotEqualTo(null);
     assertThat(ProblemDetailKey.of("balance", Integer.class).hashCode())
         .isEqualTo(ProblemDetailKey.of("balance", String.class).hashCode());
+  }
+
+  @Test
+  void selfEquality() {
+    ProblemDetailKey<Integer> key = ProblemDetailKey.of("balance", Integer.class);
+
+    assertThat(key).isEqualTo(key);
   }
 
   @Test
