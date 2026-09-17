@@ -207,12 +207,7 @@ public final class ProblemXml {
               }
             }
           }
-          default -> {
-            Object value = parseElement(in);
-            if (value instanceof String || value instanceof List || value instanceof Map) {
-              putExtension(builder, name, value);
-            }
-          }
+          default -> putExtension(builder, name, parseElement(in));
         }
       } else if (event == END_ELEMENT) {
         return builder.build();

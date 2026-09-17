@@ -80,6 +80,20 @@ class ProblemDetailDeserializationTest {
   }
 
   @Test
+  void invalidInstanceUriFallsBackToAbsent() {
+    ProblemDetail problem =
+        mapper.readValue("{\"instance\":\"not a valid uri\"}", ProblemDetail.class);
+
+    assertThat(problem.getInstance()).isNull();
+  }
+
+  @Test
+  void nonConvertibleIntegralStatusIsIgnored() {
+    assertThat(mapper.readValue("{\"status\":5000000000}", ProblemDetail.class).getStatus())
+        .isNull();
+  }
+
+  @Test
   void nullMembersAreTreatedAsAbsent() {
     ProblemDetail problem =
         mapper.readValue(

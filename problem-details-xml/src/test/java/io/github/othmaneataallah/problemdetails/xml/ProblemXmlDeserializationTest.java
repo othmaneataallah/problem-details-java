@@ -5,10 +5,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import io.github.othmaneataallah.problemdetails.core.ProblemDetail;
 import io.github.othmaneataallah.problemdetails.core.ProblemDetailKey;
+import java.lang.reflect.Proxy;
 import java.net.URI;
+import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
+import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 import org.junit.jupiter.api.Test;
 
 class ProblemXmlDeserializationTest {
@@ -110,6 +115,106 @@ class ProblemXmlDeserializationTest {
     assertThatThrownBy(() -> ProblemXml.fromXml("<html><body>nope</body></html>"))
         .isInstanceOf(XMLStreamException.class)
         .hasMessageContaining("<problem>");
+  }
+
+  @Test
+  void emptyDocumentIsRejected() {
+    assertThatThrownBy(() -> ProblemXml.fromXml("")).isInstanceOf(XMLStreamException.class);
+    assertThatThrownBy(() -> ProblemXml.fromXml("   ")).isInstanceOf(XMLStreamException.class);
+  }
+
+  @Test
+  void documentWithoutElementsIsRejected() {
+    assertThatThrownBy(() -> ProblemXml.fromXml(scriptedReader(List.of(), List.of())))
+        .isInstanceOf(XMLStreamException.class)
+        .hasMessageContaining("<problem>");
+  }
+
+  @Test
+  void truncatedProblemIsRejected() {
+    assertThatThrownBy(
+            () ->
+                ProblemXml.fromXml(
+                    scriptedReader(List.of(XMLStreamConstants.START_ELEMENT), List.of("problem"))))
+        .isInstanceOf(XMLStreamException.class)
+        .hasMessageContaining("<problem>");
+  }
+
+  @Test
+  void truncatedElementIsRejected() {
+    assertThatThrownBy(
+            () ->
+                ProblemXml.fromXml(
+                    scriptedReader(
+                        List.of(XMLStreamConstants.START_ELEMENT, XMLStreamConstants.START_ELEMENT),
+                        List.of("problem", "title"))))
+        .isInstanceOf(XMLStreamException.class)
+        .hasMessageContaining("inside an element");
+  }
+
+  /**
+   * Builds a scripted reader for event sequences no conforming parser produces (streams ending
+   * mid-document), exercising the defensive end-of-input guards.
+   */
+  private static XMLStreamReader scriptedReader(List<Integer> events, List<String> names) {
+    Queue<Integer> eventQueue = new ArrayDeque<>(events);
+    Queue<String> nameQueue = new ArrayDeque<>(names);
+    return (XMLStreamReader)
+        Proxy.newProxyInstance(
+            ProblemXmlDeserializationTest.class.getClassLoader(),
+            new Class<?>[] {XMLStreamReader.class},
+            (proxy, method, args) ->
+                switch (method.getName()) {
+                  case "hasNext" -> !eventQueue.isEmpty();
+                  case "next" -> {
+                    Integer event = eventQueue.poll();
+                    if (event == null) {
+                      throw new XMLStreamException("No more events");
+                    }
+                    yield event;
+                  }
+                  case "getLocalName" -> {
+                    String name = nameQueue.poll();
+                    if (name == null) {
+                      throw new IllegalStateException("No more names");
+                    }
+                    yield name;
+                  }
+                  case "close" -> null;
+                  default -> throw new UnsupportedOperationException(method.getName());
+                });
+  }
+
+  @Test
+  void markupInsideStandardMembersIsIgnored() throws XMLStreamException {
+    ProblemDetail problem =
+        ProblemXml.fromXml(
+            wrap(
+                "<type><link>https://example.com/x</link></type>"
+                    + "<status><code>403</code></status>"
+                    + "<detail><p>ok</p></detail>"
+                    + "<instance><ref>/a/1</ref></instance>"));
+
+    assertThat(problem.getType()).isEqualTo(ProblemDetail.ABOUT_BLANK);
+    assertThat(problem.getStatus()).isNull();
+    assertThat(problem.getDetail()).isNull();
+    assertThat(problem.getInstance()).isNull();
+  }
+
+  @Test
+  void invalidInstanceUriFallsBackToAbsent() throws XMLStreamException {
+    ProblemDetail problem = ProblemXml.fromXml(wrap("<instance>not a valid uri</instance>"));
+
+    assertThat(problem.getInstance()).isNull();
+  }
+
+  @Test
+  void cdataAndCommentsAreHandled() throws XMLStreamException {
+    ProblemDetail problem =
+        ProblemXml.fromXml(wrap("<detail><![CDATA[a<b]]></detail><title>x<!--note-->y</title>"));
+
+    assertThat(problem.getDetail()).isEqualTo("a<b");
+    assertThat(problem.getTitle()).isEqualTo("xy");
   }
 
   @Test

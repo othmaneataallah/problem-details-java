@@ -184,10 +184,124 @@ class ProblemDetailTest {
         ProblemDetail.builder().title("Title").status(400).extension(balance, 30).build();
     ProblemDetail different = ProblemDetail.builder().title("Other").status(400).build();
 
+    assertThat(first).isEqualTo(first);
     assertThat(first).isEqualTo(second);
+    assertThat(second).isEqualTo(first);
     assertThat(first.hashCode()).isEqualTo(second.hashCode());
     assertThat(first).isNotEqualTo(different);
+    assertThat(first).isNotEqualTo(null);
     assertThat(first).isNotEqualTo("not a problem detail");
     assertThat(first.toString()).contains("Title", "400", "balance=30");
+  }
+
+  @Test
+  void inequalityIsDetectedPerMember() {
+    ProblemDetailKey<Integer> balance = ProblemDetailKey.of("balance", Integer.class);
+    ProblemDetail base =
+        ProblemDetail.builder()
+            .type("https://example.com/probs/a")
+            .title("Title")
+            .status(400)
+            .detail("Detail")
+            .instance("/instances/1")
+            .extension(balance, 30)
+            .build();
+
+    assertThat(base)
+        .isNotEqualTo(
+            ProblemDetail.builder()
+                .type("https://example.com/probs/b")
+                .title("Title")
+                .status(400)
+                .detail("Detail")
+                .instance("/instances/1")
+                .extension(balance, 30)
+                .build());
+    assertThat(base)
+        .isNotEqualTo(
+            ProblemDetail.builder()
+                .type("https://example.com/probs/a")
+                .title("Other")
+                .status(400)
+                .detail("Detail")
+                .instance("/instances/1")
+                .extension(balance, 30)
+                .build());
+    assertThat(base)
+        .isNotEqualTo(
+            ProblemDetail.builder()
+                .type("https://example.com/probs/a")
+                .title("Title")
+                .status(404)
+                .detail("Detail")
+                .instance("/instances/1")
+                .extension(balance, 30)
+                .build());
+    assertThat(base)
+        .isNotEqualTo(
+            ProblemDetail.builder()
+                .type("https://example.com/probs/a")
+                .title("Title")
+                .status(400)
+                .detail("Other")
+                .instance("/instances/1")
+                .extension(balance, 30)
+                .build());
+    assertThat(base)
+        .isNotEqualTo(
+            ProblemDetail.builder()
+                .type("https://example.com/probs/a")
+                .title("Title")
+                .status(400)
+                .detail("Detail")
+                .instance("/instances/2")
+                .extension(balance, 30)
+                .build());
+    assertThat(base)
+        .isNotEqualTo(
+            ProblemDetail.builder()
+                .type("https://example.com/probs/a")
+                .title("Title")
+                .status(400)
+                .detail("Detail")
+                .instance("/instances/1")
+                .extension(balance, 31)
+                .build());
+  }
+
+  @Test
+  void toStringRendersAllPresentMembers() {
+    ProblemDetailKey<Integer> balance = ProblemDetailKey.of("balance", Integer.class);
+    ProblemDetail problem =
+        ProblemDetail.builder()
+            .type("https://example.com/probs/out-of-credit")
+            .title("Title")
+            .status(403)
+            .detail("Detail")
+            .instance("/instances/1")
+            .extension(balance, 30)
+            .build();
+
+    assertThat(problem.toString())
+        .contains(
+            "type=https://example.com/probs/out-of-credit",
+            "title=Title",
+            "status=403",
+            "detail=Detail",
+            "instance=/instances/1",
+            "balance=30");
+  }
+
+  @Test
+  void toStringOmitsAbsentMembers() {
+    assertThat(ProblemDetail.builder().build().toString())
+        .isEqualTo("ProblemDetail[type=about:blank]");
+  }
+
+  @Test
+  void relativeTypeReferenceIsPreserved() {
+    ProblemDetail problem = ProblemDetail.builder().type("/types/out-of-credit").build();
+
+    assertThat(problem.getType()).isEqualTo(URI.create("/types/out-of-credit"));
   }
 }

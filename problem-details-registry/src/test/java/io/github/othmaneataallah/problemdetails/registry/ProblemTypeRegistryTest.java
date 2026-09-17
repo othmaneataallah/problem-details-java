@@ -4,6 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 class ProblemTypeRegistryTest {
@@ -88,5 +95,65 @@ class ProblemTypeRegistryTest {
         .containsExactly(ProblemTypes.ABOUT_BLANK, other, OUT_OF_CREDIT);
     assertThatThrownBy(() -> registry.registeredTypes().add(other))
         .isInstanceOf(UnsupportedOperationException.class);
+  }
+
+  @Test
+  void concurrentRegistrationAndLookup() throws Exception {
+    ProblemTypeRegistry registry = new ProblemTypeRegistry();
+    int threads = 8;
+    ExecutorService pool = Executors.newFixedThreadPool(threads);
+    try {
+      List<Future<ProblemType>> registered = new ArrayList<>();
+      for (int i = 0; i < threads; i++) {
+        final int index = i;
+        registered.add(
+            pool.submit(
+                () -> {
+                  ProblemType type =
+                      ProblemType.of(
+                          "https://example.com/probs/worker-" + index, "Worker.", 400, null);
+                  registry.register(type);
+                  return registry.lookup(type.getType()).orElseThrow();
+                }));
+      }
+      for (Future<ProblemType> future : registered) {
+        assertThat(future.get(10, TimeUnit.SECONDS).getTitle()).isEqualTo("Worker.");
+      }
+      assertThat(registry.registeredTypes()).hasSize(threads + 1);
+    } finally {
+      pool.shutdownNow();
+    }
+  }
+
+  @Test
+  void concurrentDuplicateRegistrationLeavesOneWinner() throws Exception {
+    ProblemTypeRegistry registry = new ProblemTypeRegistry();
+    ProblemType type = ProblemType.of("https://example.com/probs/raced", "Raced.", 400, null);
+    ExecutorService pool = Executors.newFixedThreadPool(2);
+    try {
+      AtomicInteger registered = new AtomicInteger();
+      AtomicInteger rejected = new AtomicInteger();
+      List<Future<?>> races = new ArrayList<>();
+      for (int i = 0; i < 2; i++) {
+        races.add(
+            pool.submit(
+                () -> {
+                  try {
+                    registry.register(type);
+                    registered.incrementAndGet();
+                  } catch (IllegalArgumentException expected) {
+                    rejected.incrementAndGet();
+                  }
+                }));
+      }
+      for (Future<?> race : races) {
+        race.get(10, TimeUnit.SECONDS);
+      }
+      assertThat(registered.get()).isEqualTo(1);
+      assertThat(rejected.get()).isEqualTo(1);
+      assertThat(registry.lookup(type.getType())).contains(type);
+    } finally {
+      pool.shutdownNow();
+    }
   }
 }
