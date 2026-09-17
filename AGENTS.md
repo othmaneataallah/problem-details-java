@@ -435,6 +435,25 @@ Do not commit:
 
 Do not add generated artifacts to the source repository.
 
+### Git Workflow
+
+GitHub Flow with `main` as the only long-lived branch. There is no `dev`
+branch; it would add merge overhead without benefit while phases land
+sequentially.
+
+- `main` must always be releasable. Land changes via pull request with CI
+  green; merge with squash to keep `main` history tidy.
+- Branch names use `<type>/<subject>`, for example
+  `feat/problem-details-core`, `fix/registry-lookup`, `docs/readme-badges`,
+  `chore/bump-junit`.
+- Commit subjects use Conventional Commits style (`feat: ...`, `fix: ...`,
+  `chore: ...`, `test: ...`, `docs: ...`, `refactor: ...`).
+- Releases are cut as version tags (`v0.1.0`) on `main` with GitHub Release
+  notes. Maintenance branches are created only if an old release ever needs
+  patching while newer work continues.
+- `main` is protected on GitHub (requires the `build` workflow green on all
+  matrix legs, blocks force-pushes and deletions).
+
 ---
 
 ## Development Workflow
