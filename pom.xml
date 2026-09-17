@@ -16,6 +16,7 @@
         <module>problem-details-xml</module>
         <module>problem-details-registry</module>
         <module>problem-details-spring</module>
+        <module>problem-details-jaxrs</module>
     </modules>
 
     <name>problem-details-java</name>
@@ -57,6 +58,8 @@
         <assertj.version>3.27.7</assertj.version>
         <jackson.version>3.2.2</jackson.version>
         <spring.version>7.0.9</spring.version>
+        <jakarta.version>4.0.0</jakarta.version>
+        <jersey.version>4.0.2</jersey.version>
         <hamcrest.version>3.0</hamcrest.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <spotless.version>3.10.2</spotless.version>
