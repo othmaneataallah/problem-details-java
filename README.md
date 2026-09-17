@@ -1,4 +1,4 @@
-# problem-details
+# problem-details-java
 
 A framework-agnostic Java implementation of [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), *Problem Details for HTTP APIs*.
 
