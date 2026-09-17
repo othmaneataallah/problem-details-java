@@ -12,6 +12,7 @@
 
     <modules>
         <module>problem-details-core</module>
+        <module>problem-details-jackson</module>
     </modules>
 
     <name>problem-details-java</name>
@@ -51,6 +52,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <junit.version>6.1.3</junit.version>
         <assertj.version>3.27.7</assertj.version>
+        <jackson.version>3.2.2</jackson.version>
         <spotless.version>3.10.2</spotless.version>
         <google-java-format.version>1.36.1</google-java-format.version>
     </properties>
@@ -61,6 +63,13 @@
                 <groupId>org.junit</groupId>
                 <artifactId>junit-bom</artifactId>
                 <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
