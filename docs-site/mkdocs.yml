@@ -1,0 +1,18 @@
+site_name: problem-details-java
+site_description: Framework-agnostic Java implementation of RFC 9457, Problem Details for HTTP APIs.
+site_author: Othmane Ataallah
+site_url: https://othmaneataallah.github.io/problem-details-java/
+repo_url: https://github.com/othmaneataallah/problem-details-java
+repo_name: GitHub
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Quickstart: quickstart.md
+  - JSON: json.md
+  - XML: xml.md
+  - Registry: registry.md
+  - Spring: spring.md
+  - JAX-RS: jaxrs.md

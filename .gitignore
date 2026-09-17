@@ -1,6 +1,9 @@
 # Maven
 target/
 
+# MkDocs
+docs-site/site/
+
 # Java
 *.class
 
