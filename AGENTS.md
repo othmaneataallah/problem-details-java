@@ -485,15 +485,15 @@ reasoning before making the change.
 
 ## Current Development Phase
 
-The project is currently **before Phase 1**.
+The project is currently **in Phase 1**.
 
-The repository infrastructure has been initialized, but library implementation has not started.
+`problem-details-core` is under active development on `feat/problem-details-core`.
+No other implementation module has been started; do not scaffold them ahead of
+their phase.
 
 Currently, there are:
 
-- No child Maven modules.
-- No `problem-details-core`.
-- No `ProblemDetail` implementation.
+- No `ProblemDetail` implementation yet (in progress).
 - No Jackson module.
 - No XML module.
 - No registry module.

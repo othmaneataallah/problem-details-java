@@ -10,6 +10,10 @@
 
     <packaging>pom</packaging>
 
+    <modules>
+        <module>problem-details-core</module>
+    </modules>
+
     <name>problem-details-java</name>
     <description>Framework-agnostic Java implementation of RFC 9457, Problem Details for HTTP APIs.</description>
     <url>https://github.com/othmaneataallah/problem-details-java</url>
