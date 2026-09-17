@@ -63,6 +63,17 @@ Root Maven coordinates:
 - version: `0.1.0-SNAPSHOT`
 - packaging: `pom`
 
+Child modules inherit the parent `groupId` and `version` and use artifactIds:
+
+- `problem-details-core`
+- `problem-details-jackson`
+- `problem-details-xml`
+- `problem-details-registry`
+- `problem-details-spring`
+- `problem-details-jaxrs`
+
+Java packages follow the base `io.github.othmaneataallah.problemdetails`, with one subpackage per module (for example, `...problemdetails.core` for `problem-details-core`).
+
 Do not create a `src/` directory in the repository root.
 
 The root is responsible for project-wide build configuration and aggregation. Actual Java code belongs in child modules.
@@ -248,6 +259,23 @@ Before introducing non-trivial public API, consider:
 
 Do not expose implementation details unnecessarily.
 
+### Nullness Policy
+
+Main (non-test) code must not depend on any nullness annotation library,
+including JSpecify. This keeps `problem-details-core` strictly dependency-free
+and keeps the published POMs of all modules free of annotation processing
+concerns.
+
+Express nullness contracts instead through Javadoc (`@param`, `@return`,
+`@throws NullPointerException`) and enforce them at runtime with
+`java.util.Objects.requireNonNull` where a null value would violate the API
+contract.
+
+Revisit JSpecify (currently `org.jspecify:jspecify:1.0.0`, the industry-preferred
+nullness annotation set) only as a later, deliberate decision once the core API
+is stable — and then only as an `optional` compile-time dependency, never as a
+runtime requirement.
+
 ---
 
 ## RFC Terminology
@@ -336,6 +364,11 @@ JSON and XML modules should test, as applicable:
 
 ### Test Dependencies
 
+The standardized test stack is JUnit 6 (Jupiter) plus AssertJ. Versions are
+managed centrally in the parent POM (`org.junit:junit-bom` import plus an
+`assertj-core` version property); child modules must not declare their own
+versions.
+
 A test-scoped dependency may be used when appropriate.
 
 However, test dependencies must not accidentally become runtime dependencies of the published module.
@@ -349,6 +382,14 @@ Before considering implementation work complete, run:
     ./mvnw clean verify
 
 and ensure the relevant Maven reactor and tests pass.
+
+---
+
+## License
+
+The project is licensed under the Apache License, Version 2.0 (see `LICENSE`
+at the repository root, SPDX identifier `Apache-2.0`). The parent POM
+`<licenses>` block declares the same license. Keep them consistent.
 
 ---
 
