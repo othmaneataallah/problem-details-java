@@ -63,6 +63,12 @@
         <hamcrest.version>3.0</hamcrest.version>
         <servlet-api.version>6.1.0</servlet-api.version>
         <jacoco.version>0.8.15</jacoco.version>
+        <central-publishing.version>0.11.0</central-publishing.version>
+        <maven-gpg-plugin.version>3.2.8</maven-gpg-plugin.version>
+        <maven-source-plugin.version>3.3.1</maven-source-plugin.version>
+        <maven-javadoc-plugin.version>3.12.0</maven-javadoc-plugin.version>
+        <maven-remote-resources-plugin.version>3.3.0</maven-remote-resources-plugin.version>
+        <apache-resource-bundle.version>1.4</apache-resource-bundle.version>
         <spotless.version>3.10.2</spotless.version>
         <google-java-format.version>1.36.1</google-java-format.version>
     </properties>
@@ -163,6 +169,87 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <!--
+            Release publishing to Maven Central. Activated explicitly only:
+            ./mvnw -Prelease clean deploy (see release.yml). Attaches sources
+            and Javadoc jars, embeds the Apache license files, signs artifacts
+            with GPG, and stages a Portal deployment for manual publishing.
+        -->
+        <profile>
+            <id>release</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-source-plugin</artifactId>
+                        <version>${maven-source-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-sources</id>
+                                <goals>
+                                    <goal>jar-no-fork</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <version>${maven-javadoc-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-remote-resources-plugin</artifactId>
+                        <version>${maven-remote-resources-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <goals>
+                                    <goal>process</goal>
+                                </goals>
+                                <configuration>
+                                    <resourceBundles>
+                                        <resourceBundle>org.apache:apache-jar-resource-bundle:${apache-resource-bundle.version}</resourceBundle>
+                                    </resourceBundles>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-gpg-plugin</artifactId>
+                        <version>${maven-gpg-plugin.version}</version>
+                        <executions>
+                            <execution>
+                                <id>sign-artifacts</id>
+                                <phase>verify</phase>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.central</groupId>
+                        <artifactId>central-publishing-maven-plugin</artifactId>
+                        <version>${central-publishing.version}</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <publishingServerId>central</publishingServerId>
+                            <!-- First releases are validated by hand in the Portal UI. -->
+                            <autoPublish>false</autoPublish>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
