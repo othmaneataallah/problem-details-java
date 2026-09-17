@@ -485,10 +485,9 @@ reasoning before making the change.
 
 ## Current Development Phase
 
-The project is currently **in Phase 5**.
+The project is currently **in Phase 6** (the final planned phase).
 
-`problem-details-spring` is under active development on `feat/problem-details-spring`.
-No JAX-RS module has been started; do not scaffold it ahead of its phase.
+`problem-details-jaxrs` is under active development on `feat/problem-details-jaxrs`.
 
 Currently implemented and merged to `main`:
 
@@ -496,10 +495,11 @@ Currently implemented and merged to `main`:
 - `problem-details-jackson`
 - `problem-details-xml`
 - `problem-details-registry`
+- `problem-details-spring`
 
 In progress:
 
-- No Spring module yet (in progress).
+- No JAX-RS module yet (in progress).
 
 Not started:
 
