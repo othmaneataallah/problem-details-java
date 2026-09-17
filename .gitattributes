@@ -8,6 +8,7 @@
 *.properties text eol=lf
 *.gitignore text eol=lf
 *.gitattributes text eol=lf
+*.editorconfig text eol=lf
 *.sdkmanrc text eol=lf
 
 mvnw.cmd text eol=crlf

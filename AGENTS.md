@@ -385,6 +385,28 @@ and ensure the relevant Maven reactor and tests pass.
 
 ---
 
+## Code Formatting
+
+Java formatting is enforced by Spotless with google-java-format. Versions are
+pinned in the parent POM (`spotless.version`,
+`google-java-format.version`); do not declare them per module.
+
+- Fix formatting with `./mvnw spotless:apply`.
+- Verify with `./mvnw spotless:check`.
+- `spotless:check` also runs automatically as part of `./mvnw clean verify`
+  on JDK 21 and newer (profile `format-check`).
+
+google-java-format requires JDK 21+ to run, so builds on older JDKs (for
+example the Java 17 compatibility leg in CI) skip the format check but still
+compile and test normally.
+
+For IntelliJ IDEA: `.editorconfig` covers the basics natively. For exact
+Google Java Style, run `./mvnw spotless:apply` before committing or install
+the google-java-format IntelliJ plugin matching the pinned version. Do not
+commit `.idea/` code-style files; Spotless output is the source of truth.
+
+---
+
 ## License
 
 The project is licensed under the Apache License, Version 2.0 (see `LICENSE`
