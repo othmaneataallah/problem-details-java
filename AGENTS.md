@@ -59,7 +59,7 @@ The repository root is the Maven parent/aggregator and contains no Java source c
 Root Maven coordinates:
 
 - groupId: `io.github.othmaneataallah`
-- artifactId: `problem-details`
+- artifactId: `problem-details-java`
 - version: `0.1.0-SNAPSHOT`
 - packaging: `pom`
 
@@ -360,7 +360,7 @@ The repository contains:
 - `.gitattributes` for consistent Git text handling.
 - `.sdkmanrc` for development toolchain configuration.
 - Maven Wrapper files for reproducible Maven builds.
-- `docs/standards/rfc9457.txt` as the local RFC reference.
+- `docs/standards/rfc.txt` as the local RFC reference.
 
 Do not commit:
 
@@ -382,7 +382,7 @@ Before making implementation changes:
 2. Read this `AGENTS.md`.
 3. Inspect the relevant Maven POM(s).
 4. Inspect relevant existing source and test code before modifying it.
-5. Consult `docs/standards/rfc9457.txt` when implementing RFC-defined
+5. Consult `docs/standards/rfc.txt` when implementing RFC-defined
    behavior.
 6. Do not assume planned modules already exist.
 7. Do not create future modules ahead of their phase.
