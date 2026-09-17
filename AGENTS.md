@@ -494,9 +494,13 @@ All six planned phases are implemented and merged to `main`:
 - `problem-details-spring`
 - `problem-details-jaxrs`
 
-No new implementation module is planned. The next milestone is release
-preparation (Maven Central publishing, usage documentation, changelog), which
-is deliberately deferred until the codebase and testing are finalized.
+No new implementation module is planned. The agreed milestone order from here is:
+
+1. Deep testing of the codebase.
+2. Maven Central publishing (plus release preparation: usage documentation,
+   changelog).
+3. Documentation website expansion: complete user-facing guides in a clear,
+   simple tone with a solid structure, plus a switchable dark theme.
 
 Do not create any new module unless the current task explicitly starts a new
 phase.
