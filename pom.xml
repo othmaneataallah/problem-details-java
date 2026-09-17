@@ -14,6 +14,7 @@
         <module>problem-details-core</module>
         <module>problem-details-jackson</module>
         <module>problem-details-xml</module>
+        <module>problem-details-registry</module>
     </modules>
 
     <name>problem-details-java</name>
