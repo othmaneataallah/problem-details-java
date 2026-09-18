@@ -1,10 +1,10 @@
 # Quickstart
 
-This page takes you from an empty project to your first problem response. It uses the core module plus JSON output; every step also links to the full guide.
+From empty project to your first standard error response in five minutes.
 
-## 1. Add the dependencies
+## 1. Add two dependencies
 
-Maven (`pom.xml`):
+Maven:
 
 ```xml
 <dependency>
@@ -19,16 +19,14 @@ Maven (`pom.xml`):
 </dependency>
 ```
 
-Gradle (`build.gradle`):
+Gradle:
 
 ```groovy
 implementation "io.github.othmaneataallah:problem-details-core:0.1.0"
 implementation "io.github.othmaneataallah:problem-details-jackson:0.1.0"
 ```
 
-The core has zero runtime dependencies and works with no web framework at all.
-
-## 2. Build a problem
+## 2. Describe an error
 
 ```java
 ProblemDetail problem = ProblemDetail.builder()
@@ -39,7 +37,7 @@ ProblemDetail problem = ProblemDetail.builder()
     .build();
 ```
 
-All five members are optional. Leave `type` out and it defaults to `about:blank`, exactly as the RFC prescribes. Read [Core concepts](core.md) for what each member means.
+Every field is optional. Skip `type` and it becomes `about:blank` — a blank problem with no special meaning, which is exactly what you want for one-off errors. [What each field means →](core.md)
 
 ## 3. Send it as JSON
 
@@ -51,7 +49,7 @@ JsonMapper mapper = JsonMapper.builder()
 String json = mapper.writeValueAsString(problem);
 ```
 
-That produces `application/problem+json`:
+Your client receives `application/problem+json`:
 
 ```json
 {
@@ -62,16 +60,17 @@ That produces `application/problem+json`:
 }
 ```
 
-## 4. Throw it in your app
+## 4. Throw it in a real app
 
 ```java
 throw new ProblemDetailException(problem);
 ```
 
-The exception carries the structured detail, so your handlers never parse message strings. In Spring, register `ProblemDetailAdvice` and you're done; in Jakarta REST, register the two providers. Details: [Spring](spring.md), [JAX-RS](jaxrs.md).
+In Spring, one registered advice turns that into the HTTP response. In Jakarta REST, two registered providers do the same. No message parsing anywhere — the structured error travels with the exception.
 
-## Where next
+## What next?
 
-- Problem-specific data (balances, validation errors)? [Core concepts](core.md#typed-extension-members), then [Registry](registry.md) to reuse a type instead of inventing one.
-- XML output? [XML](xml.md).
-- Something surprising? [FAQ](faq.md).
+- Your errors carry extra data (balances, field errors)? [Core concepts](core.md) shows how to add typed fields.
+- Reusing an error type instead of inventing one? [Registry](registry.md).
+- XML instead of JSON? [XML](xml.md).
+- Prefer learning by running? [Demos](demos.md).
