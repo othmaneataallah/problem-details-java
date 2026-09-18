@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- Standalone consumer build: intentionally NOT part of the library reactor. -->
+    <groupId>com.example</groupId>
+    <artifactId>problem-details-jersey-demo</artifactId>
+    <version>0.1.0</version>
+    <packaging>jar</packaging>
+
+    <name>problem-details-jersey-demo</name>
+    <description>Demo Jersey/Grizzly app consuming problem-details-java from Maven Central.</description>
+
+    <properties>
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <problem-details.version>0.1.0</problem-details.version>
+        <jersey.version>4.0.2</jersey.version>
+    </properties>
+
+    <dependencies>
+        <!-- Pinned: Jersey 4.0.2's JSON provider needs a newer annotations than
+            it declares transitively (JsonSerializeAs); Jackson 3 aligns here too. -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+            <version>2.22</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-grizzly2-http</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.othmaneataallah</groupId>
+            <artifactId>problem-details-core</artifactId>
+            <version>${problem-details.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.othmaneataallah</groupId>
+            <artifactId>problem-details-registry</artifactId>
+            <version>${problem-details.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.othmaneataallah</groupId>
+            <artifactId>problem-details-jaxrs</artifactId>
+            <version>${problem-details.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <configuration>
+                    <mainClass>com.example.jerseydemo.Main</mainClass>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
