@@ -1,17 +1,17 @@
 # XML
 
-Artifact: `problem-details-xml`. Media type: `application/problem+xml`. No third-party dependencies — reading and writing use the XML streaming API built into the JDK.
+Artifact: `problem-details-xml`. Media type: `application/problem+xml`. Nothing extra to install — reading and writing use the XML support already in the JDK.
 
 ```java
 String xml = ProblemXml.toXml(problem);
 ProblemDetail readBack = ProblemXml.fromXml(xml);
 ```
 
-`toXml`/`fromXml` overloads also accept raw `XMLStreamWriter`/`XMLStreamReader` for streaming pipelines. Everything throws the checked `XMLStreamException` on failure — one exception type for I/O problems, malformed input, and rejected content.
+(Streaming variants taking `XMLStreamWriter`/`XMLStreamReader` exist for pipelines. Everything reports failures as the checked `XMLStreamException` — one exception type for all of it.)
 
-## The format
+## What the XML looks like
 
-The output follows RFC 9457, Appendix B exactly: a `<problem>` root in the `urn:ietf:rfc:7807` namespace (kept from the obsoleted RFC 7807 — that odd-looking `7807` is correct), one child element per member in schema order, extensions after the standard members:
+One child element per field, extensions after the standard ones:
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -28,15 +28,13 @@ The output follows RFC 9457, Appendix B exactly: a `<problem>` root in the `urn:
 </problem>
 ```
 
-Extensions follow the appendix's convention: an element with children is an **object**, except an element whose children are all named **`i`**, which is an **array**. Supported value types are `String`, `Number`, `Boolean`, `Character`, `List`, and `Map` — anything else fails fast with a clear error, as do extension names that aren't valid XML element names.
+Two things to know, both inherited from the format itself rather than this library: an element with children is an *object*, except one whose children are all named `i` — that's an *array*. And yes, the namespace really says `7807`: the RFC kept it from the older spec it replaced.
 
-## Two honest asymmetries
+Only `String`, numbers, booleans, lists, and maps can be written — anything else fails fast with a clear error instead of silent garbage. The same goes for field names that aren't valid XML.
 
-These come from the format itself, not from this library:
+## Two quirks worth knowing upfront
 
-1. **Everything travels as text.** `<balance>30</balance>` reads back as the *string* `"30"`. No type guessing is applied — which also keeps values like `"01234"` intact.
-2. **Empty containers have no representation.** An empty list or map writes as an empty element and reads back as an empty string.
+1. **Numbers come back as strings.** XML carries no types, so `<balance>30</balance>` reads back as `"30"`. Nothing is guessed — which is also what keeps values like `"01234"` intact. If typed round-trips matter to you, use JSON.
+2. **Empty lists and maps have no representation.** They write as an empty element and read back as an empty string.
 
-## Reading rules
-
-Mirroring the JSON module: unparseable URIs, non-numeric or out-of-range statuses, and markup where a scalar belongs are ignored; unknown elements become extensions; scalar text is trimmed (insignificant whitespace is unavoidable in XML); the root must be a `problem` element. DTDs and external entities are disabled, so XML bomb input is rejected outright.
+Otherwise reading is as forgiving as the JSON side: bad URIs, bad statuses, and markup where text belongs are skipped; unknown elements become extensions; stray whitespace is trimmed. And hostile input (entity bombs and the like) is rejected — DTDs and external entities stay off.

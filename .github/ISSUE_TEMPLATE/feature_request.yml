@@ -1,0 +1,21 @@
+name: Feature request
+description: An idea for the library
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation first — API ideas come second
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What do you propose?
+      description: Sketch of the API or behavior, if you have one in mind
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What have you tried instead?
+      description: Workarounds you use today, or why existing options fall short

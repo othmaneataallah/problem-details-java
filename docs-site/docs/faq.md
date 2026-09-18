@@ -1,29 +1,25 @@
 # FAQ
 
-## Which modules do I need?
+## Which pieces do I actually need?
 
-`problem-details-core` always. Then add by output: `problem-details-jackson` for JSON, `problem-details-xml` for XML, one or both framework modules if you run Spring or Jakarta REST, `problem-details-registry` if you want reusable problem types. Nothing pulls anything you didn't ask for — the core stays dependency-free.
+`problem-details-core`, always. Then add by output: the Jackson module for JSON, the XML module for XML, one framework module if you run Spring or Jakarta REST, the registry if you want reusable error types. Nothing drags in anything you didn't ask for.
 
-## Why did my XML number come back as a string?
+## Why did my XML number come back as text?
 
-The XML format carries no types: `<balance>30</balance>` is text on the wire, so it reads back as `"30"`. This is inherent to RFC 9457, Appendix B, and the library deliberately never guesses — guessing would corrupt values like `"01234"`. If you need typed round-trips, use JSON.
+Because in XML it *is* text: `<balance>30</balance>` carries no type information, so it reads back as `"30"`. That's how the RFC's XML format works, and nothing is guessed on the way back — which is also why values like `"01234"` survive intact. Need typed round-trips? Use JSON.
 
-## Why is the error status 500 when my problem has no status?
+## Why 500 when my error has no status?
 
-An HTTP error response must carry a status code, but a problem detail may legitimately have none (outside an HTTP context, for example). Both framework integrations fall back to 500 Internal Server Error — and say so in their Javadoc. Set an explicit `status` if 500 misrepresents your error. Note the JAX-RS mapper keeps the body faithful (no status member), while Spring's rendering materializes the 500 into its own body object.
+An HTTP error response needs a status code, and yours didn't name one — so both framework integrations answer 500. If that's misleading, set an explicit `status`. (Small difference between them: Jakarta keeps your body exactly as built; Spring's own object records the 500.)
 
-## Why is `instance` filled in even though I never set it?
+## I never set `instance`, yet responses have one. Why?
 
-That's Spring, not this library: Spring defaults an absent `instance` from the request path. Set one explicitly and it passes through untouched.
+That's Spring helping: it fills a missing `instance` from the request path. Set one yourself and yours wins.
 
-## Where do I put problem-specific data?
+## Where does my custom data go?
 
-In typed extensions ([Core concepts](core.md#typed-extension-members)), and check the [Registry](registry.md) before inventing a new problem type. Never parse `detail` for machine-readable data — the RFC (Section 3.1.4) and this library agree: that's what extensions are for.
-
-## Can I use this with Jackson 2 / Spring Boot 3 / Java 11?
-
-Java 17 is the floor — no. Jackson 2 and Boot 3 are end-of-life lines; the library targets their successors (Jackson 3, Spring 7). See [Compatibility](compatibility.md).
+In typed fields on the problem itself ([Core concepts](core.md#typed-extension-members)) — never by parsing `detail`. The detail string is for humans; machines read fields. And check the [Registry](registry.md) before inventing a whole new error type.
 
 ## Is it thread-safe?
 
-Built problems, keys, types, and registries: yes, share freely. Builders: no — build on one thread, then share the result. `JsonMapper` is thread-safe once configured; `ProblemXml` is stateless.
+Built errors, keys, types, and registries: yes, share them freely. Builders: no — build in one place, then share the result. A configured `JsonMapper` is thread-safe; the XML codec keeps no state at all.

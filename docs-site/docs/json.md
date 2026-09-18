@@ -1,10 +1,10 @@
 # JSON
 
-Artifact: `problem-details-jackson`. Media type: `application/problem+json`. Built on Jackson 3.
+Artifact: `problem-details-jackson`. Media type: `application/problem+json`. Needs Jackson 3.
 
 ## Setup
 
-Add the artifact next to `problem-details-core` (same group ID, same version), then register the module once on your mapper:
+Add the artifact next to `problem-details-core` (same group ID, same version), then register the module once:
 
 ```java
 JsonMapper mapper = JsonMapper.builder()
@@ -12,11 +12,11 @@ JsonMapper mapper = JsonMapper.builder()
     .build();
 ```
 
-Without the module, Jackson sees an ordinary bean — register it; there is no auto-detection.
+That one registration is what teaches Jackson the format — without it you get an ordinary bean dump.
 
 ## Writing
 
-Members serialize in RFC order — `type`, `status`, `title`, `detail`, `instance` — followed by extensions in the order you put them. Absent members are omitted; `type` is always present because the core defaults it to `about:blank`:
+Fields come out in the RFC's order, missing fields are simply left out, and your custom fields follow in the order you added them. (`type` is always there — the core fills in `about:blank` for you.)
 
 ```json
 {
@@ -29,7 +29,7 @@ Members serialize in RFC order — `type`, `status`, `title`, `detail`, `instanc
 }
 ```
 
-Extension values use Jackson's default value serialization, so strings, numbers, booleans, lists, and maps all work, nested as deeply as you like.
+Custom values can be strings, numbers, booleans, lists, or maps, nested as deeply as you like.
 
 ## Reading
 
@@ -37,20 +37,9 @@ Extension values use Jackson's default value serialization, so strings, numbers,
 ProblemDetail problem = mapper.readValue(json, ProblemDetail.class);
 ```
 
-Reading is lenient, exactly as RFC 9457, Section 3.1 requires: a member with the wrong type is *ignored*, as if it weren't there. A string where `status` belongs, an unparseable URI, or a JSON `null` all fall back to absent (and `type` then falls back to `about:blank`). Out-of-range or fractional statuses are ignored the same way.
+Reading forgives a lot, by design: a field with the wrong type is skipped as if it weren't there, JSON `null`s count as absent, and an out-of-range status is dropped. Unknown fields are never lost — they become extensions, so an older reader still round-trips a newer producer's output without damage.
 
-Unknown members are never dropped — they become extensions, so parse/serialize round-trips are lossless and newer producers don't break older consumers. Extension values map to Java values as follows:
-
-| JSON         | Java                                            |
-|--------------|-------------------------------------------------|
-| string       | `String`                                        |
-| integer      | `Integer` (or `Long` past int range)            |
-| decimal      | `Double`                                        |
-| boolean      | `Boolean`                                       |
-| array        | `ArrayList`                                     |
-| object       | `LinkedHashMap`                                 |
-
-Because extension lookup is name-based, you read values back through your own keys regardless of how they arrived:
+Values land in natural Java types (strings stay strings, whole numbers become `Integer` or `Long`, decimals become `Double`, arrays become lists, objects become maps), and you read them back through your own keys:
 
 ```java
 problem.get(ProblemDetailKey.of("balance", Integer.class)) // Optional[30]

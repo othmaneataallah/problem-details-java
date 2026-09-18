@@ -1,8 +1,10 @@
 # JAX-RS
 
-Artifact: `problem-details-jaxrs` (Jakarta REST 4 — the API dependency is `provided` scope, so your runtime supplies it). Two standard providers; register them on your application however your implementation prefers (e.g. `Application` subclass):
+Artifact: `problem-details-jaxrs` (Jakarta REST 4, API-only dependency — your runtime provides the rest). Two standard providers; register them on your application however your implementation likes (for example, an `Application` subclass).
 
-- `ProblemDetailMessageBodyWriter` serializes problem details as `application/problem+json` or `application/problem+xml`, delegating to the Jackson and XML modules. Resources returning `ProblemDetail` negotiate both media types through the `Accept` header:
+## Returning problems
+
+Return a problem from a resource and it negotiates like any other entity — JSON or XML depending on what the client asked for:
 
 ```java
 @GET
@@ -12,4 +14,12 @@ public ProblemDetail get() {
 }
 ```
 
-- `ProblemDetailExceptionMapper` maps `ProblemDetailException` to error responses: status from the detail (500 fallback, same rule as Spring), body pinned to `application/problem+json` so error responses stay deterministic while normal resources still negotiate.
+## Throwing problems
+
+Thrown problems always answer JSON, so error responses stay predictable no matter what the client accepts:
+
+```java
+throw new ProblemDetailException(problem);
+```
+
+As with Spring, a problem without `status` answers 500 — with the body left exactly as you built it.

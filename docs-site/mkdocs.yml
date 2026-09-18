@@ -36,5 +36,7 @@ nav:
   - Registry: registry.md
   - Spring: spring.md
   - JAX-RS: jaxrs.md
+  - Demos: demos.md
   - Compatibility: compatibility.md
   - FAQ: faq.md
+  - API reference: api.md

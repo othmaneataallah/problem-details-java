@@ -1,21 +1,20 @@
 # problem-details-java
 
-A framework-agnostic Java implementation of [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), *Problem Details for HTTP APIs* — with a dependency-free core and optional modules for JSON and XML serialization, a problem-type registry, and Spring and JAX-RS integrations.
+Standard error responses for Java APIs — one model, JSON and XML output, Spring and Jakarta REST support.
 
-Use the tabs above to find your path. New here? Start with [Quickstart](quickstart.md) — you'll return your first problem response in about five minutes.
+If your API returns errors (it does), this library makes them consistent: every error carries the same five fields defined by [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457), so clients only learn one format. New here? The [Quickstart](quickstart.md) gets you there in five minutes.
 
-## What you get
+## Pick your path
 
-- One immutable model for all five RFC members, with a builder — [Core concepts](core.md).
-- Typed extension members instead of stringly-typed maps.
-- JSON (`application/problem+json`) on Jackson 3 and XML (`application/problem+xml`) with no third-party dependencies — [JSON](json.md), [XML](xml.md).
-- A problem-type registry for reuse instead of reinvention — [Registry](registry.md).
-- One-line integrations for Spring MVC/WebFlux and Jakarta REST — [Spring](spring.md), [JAX-RS](jaxrs.md).
+- **First time?** [Quickstart](quickstart.md), then [Core concepts](core.md).
+- **Sending JSON?** [JSON](json.md). **Sending XML?** [XML](xml.md).
+- **Using Spring?** [Spring](spring.md). **Using Jakarta REST?** [JAX-RS](jaxrs.md).
+- **Reusing error types?** [Registry](registry.md).
+- **Running it?** [Demos](demos.md) — two working apps you can start in a minute.
+- **Looking something up?** [API reference](api.md), [Compatibility](compatibility.md), [FAQ](faq.md).
 
-## Requirements
+## At a glance
 
-To **use** the library: Java 17 or newer. See [Compatibility](compatibility.md) for the exact dependency versions each module expects.
+Works on **Java 17 and newer**. The core has no dependencies at all; each extra piece (JSON, Spring, …) is a module you add only if you need it.
 
-## License
-
-Licensed under the Apache License, Version 2.0 — see [LICENSE](https://github.com/othmaneataallah/problem-details-java/blob/main/LICENSE). Something unclear? The [FAQ](faq.md) probably answers it.
+Licensed under the Apache License 2.0 — see [LICENSE](https://github.com/othmaneataallah/problem-details-java/blob/main/LICENSE).

@@ -1,29 +1,28 @@
 # Spring
 
-Artifact: `problem-details-spring` (Spring Framework 7, `spring-web` only). Spring already renders RFC 9457 responses natively — this module bridges your immutable model into that pipeline instead of building a parallel one.
+Artifact: `problem-details-spring` (Spring Framework 7). Spring already knows how to render standard errors — this module plugs your problems into that machinery instead of building a second one.
 
 ## Setup
 
-Register the single advice explicitly. Component scanning doesn't reach into library packages, and there is deliberately no Boot auto-configuration keeping this thin:
+Register one advice class. Component scanning won't find it inside the library, so say it explicitly:
 
 ```java
 @Import(ProblemDetailAdvice.class)
 ```
 
-The advice uses only `spring-web` types, so the same class serves **Spring MVC and Spring WebFlux** applications.
+That's the whole setup. The same class works in Spring MVC and Spring WebFlux apps.
 
 ## Usage
 
-Throw as usual — the advice maps the exception to an `application/problem+json` response:
+Throw like anywhere else:
 
 ```java
 throw new ProblemDetailException(problem);
 ```
 
-What happens on the way out:
+You get an `application/problem+json` response with your problem's status, fields, and custom data. Two details:
 
-- The response status comes from the problem detail, or **500** when it has no `status` member (an error response must carry a status; the RFC defines none for status-less problems).
-- Your typed extensions are copied into Spring's properties map for rendering.
-- An absent `instance` is defaulted from the request path by Spring; an explicit one passes through untouched.
+- **No status on the problem?** The response goes out as 500 — an error response needs a status, and yours didn't name one. Prefer an explicit `status` when 500 would mislead.
+- **No instance on the problem?** Spring fills it in from the request path. Set one yourself and yours wins.
 
-The `SpringProblemDetails` helper exposes the same conversion (`toSpringDetail`, `toResponseEntity`, `statusCode`) for handlers you write yourself.
+The `SpringProblemDetails` helper offers the same conversion (`toSpringDetail`, `toResponseEntity`, `statusCode`) for handlers you write by hand.
