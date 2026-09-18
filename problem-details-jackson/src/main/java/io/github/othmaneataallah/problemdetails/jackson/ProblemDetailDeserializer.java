@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import tools.jackson.core.JsonParser;
 import tools.jackson.databind.DeserializationContext;
 import tools.jackson.databind.JsonNode;
@@ -38,7 +39,9 @@ import tools.jackson.databind.ValueDeserializer;
 public final class ProblemDetailDeserializer extends ValueDeserializer<ProblemDetail> {
 
   /** Creates a deserializer. */
-  public ProblemDetailDeserializer() {}
+  public ProblemDetailDeserializer() {
+    // Stateless; instantiated directly or by the Jackson module.
+  }
 
   @Override
   public ProblemDetail deserialize(JsonParser p, DeserializationContext ctxt) {
@@ -47,15 +50,14 @@ public final class ProblemDetailDeserializer extends ValueDeserializer<ProblemDe
       return (ProblemDetail) ctxt.handleUnexpectedToken(ProblemDetail.class, p);
     }
     ProblemDetail.Builder builder = ProblemDetail.builder();
+    readStandardMembers(node, builder);
+    readExtensions(node, builder);
+    return builder.build();
+  }
 
-    JsonNode type = node.get("type");
-    if (type != null && type.isTextual()) {
-      try {
-        builder.type(URI.create(type.asText()));
-      } catch (IllegalArgumentException ignored) {
-        // Fall through to the core default, per the ignore-mistyped-member rule above.
-      }
-    }
+  /** Reads the five standard members, ignoring mistyped values per RFC 9457, Section 3.1. */
+  private static void readStandardMembers(JsonNode node, ProblemDetail.Builder builder) {
+    readUriMember(node.get("type"), builder, ProblemDetail.Builder::type);
     JsonNode status = node.get("status");
     if (status != null && status.isIntegralNumber() && status.canConvertToInt()) {
       int value = status.intValue();
@@ -63,35 +65,44 @@ public final class ProblemDetailDeserializer extends ValueDeserializer<ProblemDe
         builder.status(value);
       }
     }
-    JsonNode title = node.get("title");
-    if (title != null && title.isTextual()) {
-      builder.title(title.asText());
-    }
-    JsonNode detail = node.get("detail");
-    if (detail != null && detail.isTextual()) {
-      builder.detail(detail.asText());
-    }
-    JsonNode instance = node.get("instance");
-    if (instance != null && instance.isTextual()) {
+    readTextMember(node.get("title"), builder, ProblemDetail.Builder::title);
+    readTextMember(node.get("detail"), builder, ProblemDetail.Builder::detail);
+    readUriMember(node.get("instance"), builder, ProblemDetail.Builder::instance);
+  }
+
+  /** Reads one URI member, ignoring absent, non-textual, and unparseable values. */
+  private static void readUriMember(
+      JsonNode member,
+      ProblemDetail.Builder builder,
+      BiConsumer<ProblemDetail.Builder, URI> setter) {
+    if (member != null && member.isTextual()) {
       try {
-        builder.instance(URI.create(instance.asText()));
+        setter.accept(builder, URI.create(member.asText()));
       } catch (IllegalArgumentException ignored) {
-        // Fall through to absent, per the ignore-mistyped-member rule above.
+        // Fall through, per the ignore-mistyped-member rule above.
       }
     }
+  }
 
+  /** Reads one text member, ignoring absent and non-textual values. */
+  private static void readTextMember(
+      JsonNode member,
+      ProblemDetail.Builder builder,
+      BiConsumer<ProblemDetail.Builder, String> setter) {
+    if (member != null && member.isTextual()) {
+      setter.accept(builder, member.asText());
+    }
+  }
+
+  /** Reads every non-standard member as an extension, skipping JSON nulls. */
+  private static void readExtensions(JsonNode node, ProblemDetail.Builder builder) {
     for (Map.Entry<String, JsonNode> field : node.properties()) {
       String name = field.getKey();
-      if (isStandardMember(name)) {
-        continue;
-      }
       JsonNode member = field.getValue();
-      if (member.isNull()) {
-        continue;
+      if (!isStandardMember(name) && !member.isNull()) {
+        putExtension(builder, name, toValue(member));
       }
-      putExtension(builder, name, toValue(member));
     }
-    return builder.build();
   }
 
   private static boolean isStandardMember(String name) {

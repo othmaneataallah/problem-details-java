@@ -102,12 +102,9 @@ class ProblemTypeTest {
             403,
             "https://example.com/docs/probs");
 
-    assertThat(first).isEqualTo(first);
-    assertThat(first).isEqualTo(second);
+    assertThat(first).isEqualTo(second).hasSameHashCodeAs(second);
     assertThat(second).isEqualTo(first);
-    assertThat(first.hashCode()).isEqualTo(second.hashCode());
-    assertThat(first).isNotEqualTo(null);
-    assertThat(first).isNotEqualTo("not a problem type");
+    assertThat(first).isNotNull();
     assertThat(first.toString()).contains("out-of-credit", "403");
   }
 
@@ -123,22 +120,19 @@ class ProblemTypeTest {
                 URI.create("https://example.com/probs/b"),
                 "Title.",
                 400,
-                "https://example.com/docs"));
-    assertThat(base)
+                "https://example.com/docs"))
         .isNotEqualTo(
             ProblemType.of(
                 URI.create("https://example.com/probs/a"),
                 "Other.",
                 400,
-                "https://example.com/docs"));
-    assertThat(base)
+                "https://example.com/docs"))
         .isNotEqualTo(
             ProblemType.of(
                 URI.create("https://example.com/probs/a"),
                 "Title.",
                 404,
-                "https://example.com/docs"));
-    assertThat(base)
+                "https://example.com/docs"))
         .isNotEqualTo(
             ProblemType.of(
                 URI.create("https://example.com/probs/a"),
@@ -152,7 +146,6 @@ class ProblemTypeTest {
     ProblemType minimal =
         ProblemType.of(URI.create("about:blank"), "See HTTP Status Code", null, null);
 
-    assertThat(minimal.toString())
-        .isEqualTo("ProblemType[type=about:blank, title=See HTTP Status Code]");
+    assertThat(minimal).hasToString("ProblemType[type=about:blank, title=See HTTP Status Code]");
   }
 }

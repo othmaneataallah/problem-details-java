@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.BiConsumer;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -53,6 +54,11 @@ public final class ProblemXml {
    */
   public static final String NAMESPACE = "urn:ietf:rfc:7807";
 
+  /** Local name of the format's root element. */
+  private static final String ROOT_ELEMENT = "problem";
+
+  private static final String PROBLEM_PARAMETER = "problem";
+
   private ProblemXml() {}
 
   /**
@@ -67,7 +73,6 @@ public final class ProblemXml {
    *     XML element names
    */
   public static String toXml(ProblemDetail problem) throws XMLStreamException {
-    Objects.requireNonNull(problem, "problem");
     StringWriter out = new StringWriter();
     toXml(problem, XMLOutputFactory.newFactory().createXMLStreamWriter(out));
     return out.toString();
@@ -87,10 +92,10 @@ public final class ProblemXml {
    *     XML element names
    */
   public static void toXml(ProblemDetail problem, XMLStreamWriter out) throws XMLStreamException {
-    Objects.requireNonNull(problem, "problem");
+    Objects.requireNonNull(problem, PROBLEM_PARAMETER);
     Objects.requireNonNull(out, "out");
     out.writeStartDocument("UTF-8", "1.0");
-    out.writeStartElement("problem");
+    out.writeStartElement(ROOT_ELEMENT);
     out.writeDefaultNamespace(NAMESPACE);
     writeTextElement(out, "type", problem.getType().toString());
     writeTextElement(out, "title", problem.getTitle());
@@ -122,11 +127,11 @@ public final class ProblemXml {
    */
   public static ProblemDetail fromXml(String xml) throws XMLStreamException {
     Objects.requireNonNull(xml, "xml");
-    XMLInputFactory factory = XMLInputFactory.newFactory();
-    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
-    factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
-    factory.setProperty(XMLInputFactory.IS_COALESCING, true);
-    XMLStreamReader in = factory.createXMLStreamReader(new StringReader(xml));
+    // The factory never returns null (it throws instead), but its signature carries no
+    // nullness contract for analyzers.
+    XMLStreamReader in =
+        Objects.requireNonNull(
+            newInputFactory().createXMLStreamReader(new StringReader(xml)), "reader");
     try {
       return fromXml(in);
     } finally {
@@ -146,6 +151,21 @@ public final class ProblemXml {
    */
   public static ProblemDetail fromXml(XMLStreamReader in) throws XMLStreamException {
     Objects.requireNonNull(in, "in");
+    moveToRootElement(in);
+    ProblemDetail.Builder builder = ProblemDetail.builder();
+    while (in.hasNext()) {
+      int event = in.next();
+      if (event == START_ELEMENT) {
+        readMember(in, builder);
+      } else if (event == END_ELEMENT) {
+        return builder.build();
+      }
+    }
+    throw new XMLStreamException("Unexpected end of input inside <problem>");
+  }
+
+  /** Consumes events up to the {@code problem} root element, rejecting anything else. */
+  private static void moveToRootElement(XMLStreamReader in) throws XMLStreamException {
     boolean found = false;
     while (in.hasNext()) {
       if (in.next() == START_ELEMENT) {
@@ -153,67 +173,70 @@ public final class ProblemXml {
         break;
       }
     }
-    if (!found || !"problem".equals(in.getLocalName())) {
+    if (!found || !ROOT_ELEMENT.equals(in.getLocalName())) {
       throw new XMLStreamException("Expected a <problem> root element");
     }
-    ProblemDetail.Builder builder = ProblemDetail.builder();
-    while (in.hasNext()) {
-      int event = in.next();
-      if (event == START_ELEMENT) {
-        String name = in.getLocalName();
-        switch (name) {
-          case "type" -> {
-            Object value = parseElement(in);
-            if (value instanceof String text) {
-              try {
-                builder.type(URI.create(text));
-              } catch (IllegalArgumentException ignored) {
-                // Fall through to the core default, mirroring the JSON module.
-              }
-            }
-          }
-          case "status" -> {
-            Object value = parseElement(in);
-            if (value instanceof String text) {
-              try {
-                int status = Integer.parseInt(text);
-                if (status >= 100 && status <= 599) {
-                  builder.status(status);
-                }
-              } catch (NumberFormatException ignored) {
-                // Fall through to absent, mirroring the JSON module.
-              }
-            }
-          }
-          case "title" -> {
-            Object value = parseElement(in);
-            if (value instanceof String text) {
-              builder.title(text);
-            }
-          }
-          case "detail" -> {
-            Object value = parseElement(in);
-            if (value instanceof String text) {
-              builder.detail(text);
-            }
-          }
-          case "instance" -> {
-            Object value = parseElement(in);
-            if (value instanceof String text) {
-              try {
-                builder.instance(URI.create(text));
-              } catch (IllegalArgumentException ignored) {
-                // Fall through to absent, mirroring the JSON module.
-              }
-            }
-          }
-          default -> putExtension(builder, name, parseElement(in));
-        }
-      } else if (event == END_ELEMENT) {
-        return builder.build();
+  }
+
+  /** Reads the member the reader is positioned on into the builder. */
+  private static void readMember(XMLStreamReader in, ProblemDetail.Builder builder)
+      throws XMLStreamException {
+    String name = in.getLocalName();
+    switch (name) {
+      case "type" -> readUriMember(in, builder, ProblemDetail.Builder::type);
+      case "status" -> readStatusMember(in, builder);
+      case "title" -> readTextMember(in, builder, ProblemDetail.Builder::title);
+      case "detail" -> readTextMember(in, builder, ProblemDetail.Builder::detail);
+      case "instance" -> readUriMember(in, builder, ProblemDetail.Builder::instance);
+      default -> putExtension(builder, name, parseElement(in));
+    }
+  }
+
+  /**
+   * Reads a URI member, ignoring unparseable values. An ignored {@code type} falls back to the core
+   * default; an ignored {@code instance} stays absent.
+   */
+  private static void readUriMember(
+      XMLStreamReader in,
+      ProblemDetail.Builder builder,
+      BiConsumer<ProblemDetail.Builder, URI> setter)
+      throws XMLStreamException {
+    Object value = parseElement(in);
+    if (value instanceof String text) {
+      try {
+        setter.accept(builder, URI.create(text));
+      } catch (IllegalArgumentException ignored) {
+        // Fall through, mirroring the JSON module.
       }
     }
-    throw new XMLStreamException("Unexpected end of input inside <problem>");
+  }
+
+  /** Reads the {@code status} member, ignoring non-numeric and out-of-range values. */
+  private static void readStatusMember(XMLStreamReader in, ProblemDetail.Builder builder)
+      throws XMLStreamException {
+    Object value = parseElement(in);
+    if (value instanceof String text) {
+      try {
+        int status = Integer.parseInt(text);
+        if (status >= 100 && status <= 599) {
+          builder.status(status);
+        }
+      } catch (NumberFormatException ignored) {
+        // Fall through to absent, mirroring the JSON module.
+      }
+    }
+  }
+
+  /** Reads a plain text member, ignoring markup content. */
+  private static void readTextMember(
+      XMLStreamReader in,
+      ProblemDetail.Builder builder,
+      BiConsumer<ProblemDetail.Builder, String> setter)
+      throws XMLStreamException {
+    Object value = parseElement(in);
+    if (value instanceof String text) {
+      setter.accept(builder, text);
+    }
   }
 
   private static void writeTextElement(XMLStreamWriter out, String name, String value)
@@ -257,13 +280,25 @@ public final class ProblemXml {
   }
 
   /**
+   * Creates securely configured reader factories: DTDs and external entities stay disabled
+   * everywhere, including validation probes, so untrusted input can never resolve them.
+   */
+  private static XMLInputFactory newInputFactory() {
+    XMLInputFactory factory = XMLInputFactory.newFactory();
+    factory.setProperty(XMLInputFactory.SUPPORT_DTD, false);
+    factory.setProperty(XMLInputFactory.IS_SUPPORTING_EXTERNAL_ENTITIES, false);
+    factory.setProperty(XMLInputFactory.IS_COALESCING, true);
+    return factory;
+  }
+
+  /**
    * Rejects names the writer would otherwise emit as malformed markup. The check parses a probe
    * element, so exactly the XML {@code Name} production is enforced without reimplementing it.
    */
   private static void requireValidElementName(String name) throws XMLStreamException {
     try {
       XMLStreamReader probe =
-          XMLInputFactory.newFactory().createXMLStreamReader(new StringReader("<" + name + "/>"));
+          newInputFactory().createXMLStreamReader(new StringReader("<" + name + "/>"));
       try {
         while (probe.hasNext()) {
           probe.next();
@@ -317,7 +352,9 @@ public final class ProblemXml {
           children.forEach(child -> values.put(child.getKey(), child.getValue()));
           return values;
         }
-        default -> {}
+        default -> {
+          // Comments, processing instructions, and other non-element events carry no data.
+        }
       }
     }
     throw new XMLStreamException("Unexpected end of input inside an element");

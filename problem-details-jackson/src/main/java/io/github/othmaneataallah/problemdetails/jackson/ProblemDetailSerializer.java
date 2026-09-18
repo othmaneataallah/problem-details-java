@@ -21,7 +21,9 @@ import tools.jackson.databind.ValueSerializer;
 public final class ProblemDetailSerializer extends ValueSerializer<ProblemDetail> {
 
   /** Creates a serializer. */
-  public ProblemDetailSerializer() {}
+  public ProblemDetailSerializer() {
+    // Stateless; instantiated directly or by the Jackson module.
+  }
 
   @Override
   public void serialize(ProblemDetail value, JsonGenerator gen, SerializationContext ctxt) {

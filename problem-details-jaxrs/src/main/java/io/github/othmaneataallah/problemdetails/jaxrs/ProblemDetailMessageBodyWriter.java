@@ -35,7 +35,9 @@ public final class ProblemDetailMessageBodyWriter implements MessageBodyWriter<P
       JsonMapper.builder().addModule(new ProblemDetailsModule()).build();
 
   /** Creates a writer. */
-  public ProblemDetailMessageBodyWriter() {}
+  public ProblemDetailMessageBodyWriter() {
+    // Stateless; instantiated by the JAX-RS runtime.
+  }
 
   @Override
   public boolean isWriteable(

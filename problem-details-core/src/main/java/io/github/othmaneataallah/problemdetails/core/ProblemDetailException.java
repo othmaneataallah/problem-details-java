@@ -21,6 +21,8 @@ public class ProblemDetailException extends RuntimeException {
 
   private static final long serialVersionUID = 1L;
 
+  private static final String PROBLEM_DETAIL_PARAMETER = "problemDetail";
+
   private final ProblemDetail problemDetail;
 
   /**
@@ -31,7 +33,7 @@ public class ProblemDetailException extends RuntimeException {
    */
   public ProblemDetailException(ProblemDetail problemDetail) {
     super(messageFor(problemDetail));
-    this.problemDetail = Objects.requireNonNull(problemDetail, "problemDetail");
+    this.problemDetail = Objects.requireNonNull(problemDetail, PROBLEM_DETAIL_PARAMETER);
   }
 
   /**
@@ -43,7 +45,7 @@ public class ProblemDetailException extends RuntimeException {
    */
   public ProblemDetailException(ProblemDetail problemDetail, Throwable cause) {
     super(messageFor(problemDetail), cause);
-    this.problemDetail = Objects.requireNonNull(problemDetail, "problemDetail");
+    this.problemDetail = Objects.requireNonNull(problemDetail, PROBLEM_DETAIL_PARAMETER);
   }
 
   /**
@@ -56,7 +58,7 @@ public class ProblemDetailException extends RuntimeException {
   }
 
   private static String messageFor(ProblemDetail problemDetail) {
-    Objects.requireNonNull(problemDetail, "problemDetail");
+    Objects.requireNonNull(problemDetail, PROBLEM_DETAIL_PARAMETER);
     if (problemDetail.getDetail() != null) {
       return problemDetail.getDetail();
     }

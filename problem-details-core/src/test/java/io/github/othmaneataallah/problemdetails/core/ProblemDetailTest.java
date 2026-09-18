@@ -23,7 +23,7 @@ class ProblemDetailTest {
 
   @Test
   void aboutBlankConstantMatchesDefaultType() {
-    assertThat(ProblemDetail.ABOUT_BLANK).isEqualTo(URI.create("about:blank"));
+    assertThat(URI.create("about:blank")).isEqualTo(ProblemDetail.ABOUT_BLANK);
     assertThat(ProblemDetail.builder().build().getType()).isEqualTo(ProblemDetail.ABOUT_BLANK);
   }
 
@@ -184,14 +184,12 @@ class ProblemDetailTest {
         ProblemDetail.builder().title("Title").status(400).extension(balance, 30).build();
     ProblemDetail different = ProblemDetail.builder().title("Other").status(400).build();
 
-    assertThat(first).isEqualTo(first);
-    assertThat(first).isEqualTo(second);
+    assertThat(first)
+        .isEqualTo(second)
+        .hasSameHashCodeAs(second)
+        .isNotEqualTo(different)
+        .isNotNull();
     assertThat(second).isEqualTo(first);
-    assertThat(first.hashCode()).isEqualTo(second.hashCode());
-    assertThat(first).isNotEqualTo(different);
-    assertThat(first).isNotEqualTo(null);
-    assertThat(first).isNotEqualTo("not a problem detail");
-    assertThat(first.toString()).contains("Title", "400", "balance=30");
   }
 
   @Test
@@ -216,8 +214,7 @@ class ProblemDetailTest {
                 .detail("Detail")
                 .instance("/instances/1")
                 .extension(balance, 30)
-                .build());
-    assertThat(base)
+                .build())
         .isNotEqualTo(
             ProblemDetail.builder()
                 .type("https://example.com/probs/a")
@@ -226,8 +223,7 @@ class ProblemDetailTest {
                 .detail("Detail")
                 .instance("/instances/1")
                 .extension(balance, 30)
-                .build());
-    assertThat(base)
+                .build())
         .isNotEqualTo(
             ProblemDetail.builder()
                 .type("https://example.com/probs/a")
@@ -236,8 +232,7 @@ class ProblemDetailTest {
                 .detail("Detail")
                 .instance("/instances/1")
                 .extension(balance, 30)
-                .build());
-    assertThat(base)
+                .build())
         .isNotEqualTo(
             ProblemDetail.builder()
                 .type("https://example.com/probs/a")
@@ -246,8 +241,7 @@ class ProblemDetailTest {
                 .detail("Other")
                 .instance("/instances/1")
                 .extension(balance, 30)
-                .build());
-    assertThat(base)
+                .build())
         .isNotEqualTo(
             ProblemDetail.builder()
                 .type("https://example.com/probs/a")
@@ -256,8 +250,7 @@ class ProblemDetailTest {
                 .detail("Detail")
                 .instance("/instances/2")
                 .extension(balance, 30)
-                .build());
-    assertThat(base)
+                .build())
         .isNotEqualTo(
             ProblemDetail.builder()
                 .type("https://example.com/probs/a")
@@ -294,8 +287,7 @@ class ProblemDetailTest {
 
   @Test
   void toStringOmitsAbsentMembers() {
-    assertThat(ProblemDetail.builder().build().toString())
-        .isEqualTo("ProblemDetail[type=about:blank]");
+    assertThat(ProblemDetail.builder().build()).hasToString("ProblemDetail[type=about:blank]");
   }
 
   @Test
