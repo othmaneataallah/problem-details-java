@@ -22,7 +22,9 @@ import jakarta.ws.rs.ext.Provider;
 public final class ProblemDetailExceptionMapper implements ExceptionMapper<ProblemDetailException> {
 
   /** Creates a mapper. */
-  public ProblemDetailExceptionMapper() {}
+  public ProblemDetailExceptionMapper() {
+    // Stateless; instantiated by the JAX-RS runtime.
+  }
 
   @Override
   public Response toResponse(ProblemDetailException exception) {

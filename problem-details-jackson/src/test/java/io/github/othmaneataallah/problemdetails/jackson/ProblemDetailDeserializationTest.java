@@ -20,12 +20,14 @@ class ProblemDetailDeserializationTest {
   @Test
   void outOfCreditExampleParses() {
     String json =
-        "{\"type\":\"https://example.com/probs/out-of-credit\","
-            + "\"title\":\"You do not have enough credit.\","
-            + "\"detail\":\"Your current balance is 30, but that costs 50.\","
-            + "\"instance\":\"/account/12345/msgs/abc\","
-            + "\"balance\":30,"
-            + "\"accounts\":[\"/account/12345\",\"/account/67890\"]}";
+        """
+        {"type":"https://example.com/probs/out-of-credit",\
+        "title":"You do not have enough credit.",\
+        "detail":"Your current balance is 30, but that costs 50.",\
+        "instance":"/account/12345/msgs/abc",\
+        "balance":30,\
+        "accounts":["/account/12345","/account/67890"]}\
+        """;
 
     ProblemDetail problem = mapper.readValue(json, ProblemDetail.class);
 

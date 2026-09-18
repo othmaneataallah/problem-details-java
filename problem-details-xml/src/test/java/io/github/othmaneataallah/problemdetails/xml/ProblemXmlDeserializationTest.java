@@ -77,14 +77,16 @@ class ProblemXmlDeserializationTest {
   @Test
   void prettyPrintedInputParsesCleanly() throws XMLStreamException {
     String xml =
-        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-            + "<problem xmlns=\"urn:ietf:rfc:7807\">\n"
-            + "  <title>You do not have enough credit.</title>\n"
-            + "  <accounts>\n"
-            + "    <i>/account/12345</i>\n"
-            + "    <i>/account/67890</i>\n"
-            + "  </accounts>\n"
-            + "</problem>";
+        """
+        <?xml version="1.0" encoding="UTF-8"?>
+        <problem xmlns="urn:ietf:rfc:7807">
+          <title>You do not have enough credit.</title>
+          <accounts>
+            <i>/account/12345</i>
+            <i>/account/67890</i>
+          </accounts>
+        </problem>
+        """;
 
     ProblemDetail problem = ProblemXml.fromXml(xml);
 

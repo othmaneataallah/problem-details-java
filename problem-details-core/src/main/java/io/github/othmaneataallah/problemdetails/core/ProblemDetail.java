@@ -1,5 +1,6 @@
 package io.github.othmaneataallah.problemdetails.core;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -33,6 +34,10 @@ import java.util.Optional;
  * be reused to create several instances; values are copied at {@link Builder#build() build} time,
  * so later builder mutations never affect already-built instances.
  *
+ * <p>Instances are {@link Serializable} so problem details can cross process boundaries (for
+ * example inside a serialized {@link ProblemDetailException}); extension <em>values</em> travel
+ * along, so they should be serializable too.
+ *
  * <pre>{@code
  * ProblemDetail problem =
  *     ProblemDetail.builder()
@@ -44,7 +49,9 @@ import java.util.Optional;
  *         .build();
  * }</pre>
  */
-public final class ProblemDetail {
+public final class ProblemDetail implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   /** The problem type assumed when {@code type} is absent (RFC 9457, Section 3.1.1). */
   public static final URI ABOUT_BLANK = URI.create("about:blank");
@@ -54,8 +61,15 @@ public final class ProblemDetail {
   private final Integer status;
   private final String detail;
   private final URI instance;
-  private final Map<ProblemDetailKey<?>, Object> extensions;
-  private final Map<String, Object> extensionMembers;
+
+  // S1948 is suppressed by design: the declared Map types are not Serializable, but the
+  // runtime instances always are — and extension values remain the caller's responsibility,
+  // as documented on the class.
+  @SuppressWarnings("java:S1948")
+  private final LinkedHashMap<ProblemDetailKey<?>, Object> extensions;
+
+  @SuppressWarnings("java:S1948")
+  private final LinkedHashMap<String, Object> extensionMembers;
 
   private ProblemDetail(Builder builder) {
     this.type = builder.type;
@@ -63,10 +77,10 @@ public final class ProblemDetail {
     this.status = builder.status;
     this.detail = builder.detail;
     this.instance = builder.instance;
-    this.extensions = Collections.unmodifiableMap(new LinkedHashMap<>(builder.extensions));
-    Map<String, Object> members = new LinkedHashMap<>();
+    this.extensions = new LinkedHashMap<>(builder.extensions);
+    LinkedHashMap<String, Object> members = new LinkedHashMap<>();
     this.extensions.forEach((key, value) -> members.put(key.name(), value));
-    this.extensionMembers = Collections.unmodifiableMap(members);
+    this.extensionMembers = members;
   }
 
   /**
@@ -173,10 +187,11 @@ public final class ProblemDetail {
    * <p>This view exists for serialization modules (JSON, XML), which must write members the typed
    * API does not know statically. Application code should prefer {@link #get(ProblemDetailKey)}.
    *
-   * @return an unmodifiable snapshot of the extension members; never null
+   * @return an unmodifiable view of the extension members; never null, and safe to retain since the
+   *     underlying data never changes
    */
   public Map<String, Object> extensionMembers() {
-    return extensionMembers;
+    return Collections.unmodifiableMap(extensionMembers);
   }
 
   @Override

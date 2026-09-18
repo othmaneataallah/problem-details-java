@@ -3,6 +3,10 @@ package io.github.othmaneataallah.problemdetails.core;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.URI;
 import org.junit.jupiter.api.Test;
 
@@ -48,7 +52,32 @@ class ProblemDetailExceptionTest {
   }
 
   @Test
+  void survivesJavaSerialization() throws Exception {
+    ProblemDetailException original =
+        new ProblemDetailException(
+            ProblemDetail.builder()
+                .title("Title.")
+                .status(400)
+                .extension(ProblemDetailKey.of("balance", Integer.class), 30)
+                .build());
+
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    try (ObjectOutputStream out = new ObjectOutputStream(bytes)) {
+      out.writeObject(original);
+    }
+    ProblemDetailException readBack;
+    try (ObjectInputStream in =
+        new ObjectInputStream(new ByteArrayInputStream(bytes.toByteArray()))) {
+      readBack = (ProblemDetailException) in.readObject();
+    }
+
+    assertThat(readBack.getProblemDetail()).isEqualTo(original.getProblemDetail());
+    assertThat(readBack.getMessage()).isEqualTo(original.getMessage());
+  }
+
+  @Test
   void nullProblemDetailIsRejected() {
+
     assertThatThrownBy(() -> new ProblemDetailException(null))
         .isInstanceOf(NullPointerException.class);
     assertThatThrownBy(() -> new ProblemDetailException(null, new RuntimeException()))

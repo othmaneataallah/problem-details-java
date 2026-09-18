@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
  */
 public final class SpringProblemDetails {
 
+  private static final String PROBLEM_PARAMETER = "problem";
+
   private SpringProblemDetails() {}
 
   /**
@@ -32,7 +34,7 @@ public final class SpringProblemDetails {
    * @throws NullPointerException if {@code problem} is null
    */
   public static HttpStatusCode statusCode(ProblemDetail problem) {
-    Objects.requireNonNull(problem, "problem");
+    Objects.requireNonNull(problem, PROBLEM_PARAMETER);
     if (problem.getStatus() == null) {
       return HttpStatus.INTERNAL_SERVER_ERROR;
     }
@@ -47,7 +49,7 @@ public final class SpringProblemDetails {
    * @throws NullPointerException if {@code problem} is null
    */
   public static org.springframework.http.ProblemDetail toSpringDetail(ProblemDetail problem) {
-    Objects.requireNonNull(problem, "problem");
+    Objects.requireNonNull(problem, PROBLEM_PARAMETER);
     org.springframework.http.ProblemDetail springDetail =
         org.springframework.http.ProblemDetail.forStatus(statusCode(problem));
     springDetail.setType(problem.getType());
@@ -78,7 +80,7 @@ public final class SpringProblemDetails {
    */
   public static ResponseEntity<org.springframework.http.ProblemDetail> toResponseEntity(
       ProblemDetail problem) {
-    Objects.requireNonNull(problem, "problem");
+    Objects.requireNonNull(problem, PROBLEM_PARAMETER);
     return ResponseEntity.status(statusCode(problem))
         .contentType(MediaType.APPLICATION_PROBLEM_JSON)
         .body(toSpringDetail(problem));

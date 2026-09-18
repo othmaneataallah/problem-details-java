@@ -1,5 +1,6 @@
 package io.github.othmaneataallah.problemdetails.core;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -26,7 +27,9 @@ import java.util.Objects;
  *
  * @param <T> the Java type of the extension member value
  */
-public final class ProblemDetailKey<T> {
+public final class ProblemDetailKey<T> implements Serializable {
+
+  private static final long serialVersionUID = 1L;
 
   private final String name;
   private final Class<T> type;

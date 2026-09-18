@@ -378,10 +378,13 @@ However, test dependencies must not accidentally become runtime dependencies of 
 JaCoCo (`jacoco.version` in the parent POM) is wired report-only: every
 `./mvnw clean verify` writes per-module reports to `target/site/jacoco` without
 failing the build. There are no coverage gates; use the reports during review
-to spot untested branches. One known artifact: single-statement lines that
-always throw (for example a guard delegating to a method that only throws)
-execute but never complete, so JaCoCo reports them as missed despite a passing
-test proving otherwise.
+to spot untested branches. Two known artifacts, both verified by other means
+and deliberately left alone: single-statement lines that always throw (for
+example a guard delegating to a method that only throws) execute but never
+complete, so JaCoCo reports them as missed despite a passing test proving
+otherwise; and `this == obj` fast-path guards in `equals`, which only a
+self-comparison could cover — a test SonarQube rightly flags as a bug, so the
+partial branch stands.
 
 ### Completion Requirement
 

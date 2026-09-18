@@ -49,13 +49,12 @@ class SpringProblemDetailsTest {
                     30)
                 .build());
 
-    assertThat(springDetail.getType().toString())
-        .isEqualTo("https://example.com/probs/out-of-credit");
+    assertThat(springDetail.getType()).hasToString("https://example.com/probs/out-of-credit");
     assertThat(springDetail.getTitle()).isEqualTo("You do not have enough credit.");
     assertThat(springDetail.getStatus()).isEqualTo(403);
     assertThat(springDetail.getDetail())
         .isEqualTo("Your current balance is 30, but that costs 50.");
-    assertThat(springDetail.getInstance().toString()).isEqualTo("/account/12345/msgs/abc");
+    assertThat(springDetail.getInstance()).hasToString("/account/12345/msgs/abc");
     assertThat(springDetail.getProperties()).containsEntry("balance", 30);
   }
 

@@ -23,7 +23,9 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 public class ProblemDetailAdvice {
 
   /** Creates the advice. */
-  public ProblemDetailAdvice() {}
+  public ProblemDetailAdvice() {
+    // Stateless; registered as a bean.
+  }
 
   /**
    * Handles a problem detail exception.
