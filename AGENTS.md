@@ -276,6 +276,21 @@ nullness annotation set) only as a later, deliberate decision once the core API
 is stable — and then only as an `optional` compile-time dependency, never as a
 runtime requirement.
 
+### Logging Policy
+
+Main (non-test) code must not log. No logging framework, no logging facade
+(including SLF4J), and no `System.out`/`System.err` output.
+
+Rationale: a library does not own its host's logging setup, so any choice
+imposes on every consumer — and this library's operations are pure functions
+(build, serialize, parse) whose outcomes already surface as return values,
+`Optional`, or documented exceptions. Silent leniency (such as ignored members
+while parsing) is covered by Javadoc contracts and tests instead.
+
+Revisit only if the library ever gains genuinely operational behavior (retry,
+I/O, background work) — and then behind an `optional` facade dependency,
+never in `core`.
+
 ---
 
 ## RFC Terminology
